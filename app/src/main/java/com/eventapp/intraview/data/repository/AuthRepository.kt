@@ -73,7 +73,10 @@ class AuthRepository @Inject constructor(
         }
     }
     
-    suspend fun signOut() {
+    suspend fun signOut(context: Context) {
+        // Sign out from Google Sign-In client to clear cached account
+        getGoogleSignInClient(context).signOut().await()
+        // Sign out from Firebase
         auth.signOut()
     }
     

@@ -2,7 +2,9 @@
 *.apk
 *.ap_
 *.aab
-
+# Untracted md files
+GOOGLE_SIGNOUT_FIX.md
+CHANGES_SUMMARY.md
 # Files for the ART/Dalvik VM
 *.dex
 

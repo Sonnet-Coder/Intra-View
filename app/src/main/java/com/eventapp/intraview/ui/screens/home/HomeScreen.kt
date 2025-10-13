@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -34,6 +35,7 @@ fun HomeScreen(
     val showInviteDialog by viewModel.showInviteDialog.collectAsState()
     val inviteCode by viewModel.inviteCode.collectAsState()
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf(stringResource(R.string.hosting), stringResource(R.string.invited))
@@ -48,7 +50,7 @@ fun HomeScreen(
                     }
                     IconButton(onClick = {
                         scope.launch {
-                            viewModel.signOut()
+                            viewModel.signOut(context)
                             onLogout()
                         }
                     }) {

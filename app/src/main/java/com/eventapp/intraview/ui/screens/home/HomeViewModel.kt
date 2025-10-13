@@ -88,8 +88,8 @@ class HomeViewModel @Inject constructor(
         return eventRepository.findEventByInviteCode(code)
     }
     
-    suspend fun signOut() {
-        authRepository.signOut()
+    suspend fun signOut(context: android.content.Context) {
+        authRepository.signOut(context)
     }
 }
 
