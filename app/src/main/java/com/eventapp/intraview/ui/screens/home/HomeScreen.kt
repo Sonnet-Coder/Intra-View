@@ -34,6 +34,8 @@ fun HomeScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val showInviteDialog by viewModel.showInviteDialog.collectAsState()
     val inviteCode by viewModel.inviteCode.collectAsState()
+    val isJoiningEvent by viewModel.isJoiningEvent.collectAsState()
+    val error by viewModel.error.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     
@@ -120,13 +122,41 @@ fun HomeScreen(
             onDismissRequest = { viewModel.hideInviteDialog() },
             title = { Text(stringResource(R.string.enter_invite_code)) },
             text = {
-                OutlinedTextField(
-                    value = inviteCode,
-                    onValueChange = { viewModel.setInviteCode(it) },
-                    label = { Text("Invite Code") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = inviteCode,
+                        onValueChange = { viewModel.setInviteCode(it) },
+                        label = { Text("Invite Code") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isJoiningEvent
+                    )
+                    
+                    if (error != null) {
+                        Text(
+                            text = error!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    
+                    if (isJoiningEvent) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Joining event...")
+                        }
+                    }
+                }
             },
             confirmButton = {
                 TextButton(
@@ -138,13 +168,17 @@ fun HomeScreen(
                                 onEventClick(event.eventId)
                             }
                         }
-                    }
+                    },
+                    enabled = !isJoiningEvent
                 ) {
                     Text(stringResource(R.string.join_event))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.hideInviteDialog() }) {
+                TextButton(
+                    onClick = { viewModel.hideInviteDialog() },
+                    enabled = !isJoiningEvent
+                ) {
                     Text(stringResource(R.string.cancel))
                 }
             }

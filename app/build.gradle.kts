@@ -17,7 +17,7 @@ android {
 
     defaultConfig {
         applicationId = "com.eventapp.intraview"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -67,7 +67,7 @@ ksp {
 
 dependencies {
     // Firebase BOM
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
@@ -109,6 +109,8 @@ dependencies {
     implementation("androidx.camera:camera-camera2:1.3.1")
     implementation("androidx.camera:camera-lifecycle:1.3.1")
     implementation("androidx.camera:camera-view:1.3.1")
+    // ListenableFuture used by CameraX
+    implementation("com.google.guava:guava:32.1.3-android")
 
     // QR Code generation
     implementation("com.google.zxing:core:3.5.2")

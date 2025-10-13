@@ -1,0 +1,80 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    // Users can read any user profile, but only write their own
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      // Anyone signed in can read events
+      allow read: if isSignedIn();
+      
+      // Anyone signed in can create an event
+      allow create: if isSignedIn() 
+        && request.resource.data.hostId == request.auth.uid;
+      
+      // Event host or guests can update
+      allow update: if isSignedIn() && (
+        resource.data.hostId == request.auth.uid ||
+        request.auth.uid in resource.data.guestIds
+      );
+      
+      // Only the host can delete
+      allow delete: if isSignedIn() 
+        && resource.data.hostId == request.auth.uid;
+    }
+    
+    // Invitations collection
+    match /invitations/{invitationId} {
+      // Users can read invitations where they are host or guest
+      allow read: if isSignedIn() && (
+        resource.data.hostId == request.auth.uid ||
+        resource.data.guestId == request.auth.uid
+      );
+      
+      // Event hosts can create invitations
+      allow create: if isSignedIn()
+        && request.resource.data.hostId == request.auth.uid;
+      
+      // Host or guest can update (for RSVP status)
+      allow update: if isSignedIn() && (
+        resource.data.hostId == request.auth.uid ||
+        resource.data.guestId == request.auth.uid
+      );
+      
+      // Only host can delete
+      allow delete: if isSignedIn()
+        && resource.data.hostId == request.auth.uid;
+    }
+    
+    // Photos collection
+    match /photos/{photoId} {
+      // Anyone in the event can read photos
+      allow read: if isSignedIn();
+      
+      // Anyone signed in can upload photos
+      allow create: if isSignedIn()
+        && request.resource.data.uploadedBy == request.auth.uid;
+      
+      // Only the uploader can delete their photos
+      allow delete: if isSignedIn()
+        && resource.data.uploadedBy == request.auth.uid;
+    }
+  }
+}
+

@@ -37,6 +37,9 @@ class HomeViewModel @Inject constructor(
     private val _showInviteDialog = MutableStateFlow(false)
     val showInviteDialog: StateFlow<Boolean> = _showInviteDialog.asStateFlow()
     
+    private val _isJoiningEvent = MutableStateFlow(false)
+    val isJoiningEvent: StateFlow<Boolean> = _isJoiningEvent.asStateFlow()
+    
     init {
         loadEvents()
     }
@@ -83,9 +86,53 @@ class HomeViewModel @Inject constructor(
     
     suspend fun joinEventWithCode(): Event? {
         val code = _inviteCode.value
-        if (code.isBlank()) return null
+        if (code.isBlank()) {
+            _error.value = "Please enter an invite code"
+            return null
+        }
         
-        return eventRepository.findEventByInviteCode(code)
+        _isJoiningEvent.value = true
+        _error.value = null
+        
+        val event = eventRepository.findEventByInviteCode(code)
+        
+        if (event == null) {
+            _error.value = "Invalid invite code"
+            _isJoiningEvent.value = false
+            return null
+        }
+        
+        // Add the current user as a guest to the event
+        val userId = authRepository.currentUserId
+        if (userId == null) {
+            _error.value = "User not authenticated"
+            _isJoiningEvent.value = false
+            return null
+        }
+        
+        // Check if user is already a guest or host
+        if (event.hostId == userId) {
+            _error.value = "You are the host of this event"
+            _isJoiningEvent.value = false
+            return null
+        }
+        
+        if (event.guestIds.contains(userId)) {
+            // Already a guest, just navigate to the event
+            _isJoiningEvent.value = false
+            return event
+        }
+        
+        val result = eventRepository.addGuestToEvent(event.eventId, userId)
+        
+        _isJoiningEvent.value = false
+        
+        if (result is com.eventapp.intraview.util.Result.Error) {
+            _error.value = result.message
+            return null
+        }
+        
+        return event
     }
     
     suspend fun signOut(context: android.content.Context) {
