@@ -50,12 +50,16 @@ fun QRScannerScreen(
         }
     }
     
+    // When a scan result (success or error) arrives, briefly show message then go back
     LaunchedEffect(scanResult) {
-        if (scanResult is ScanResult.Success) {
-            checkedInCount++
-            // Auto reset after 2 seconds
-            kotlinx.coroutines.delay(2000)
-            viewModel.resetScanResult()
+        when (scanResult) {
+            is ScanResult.Success, is ScanResult.Error -> {
+                // Debounce: show result then navigate back
+                kotlinx.coroutines.delay(1200)
+                onNavigateBack()
+                viewModel.resetScanResult()
+            }
+            else -> {}
         }
     }
     
@@ -101,7 +105,7 @@ fun QRScannerScreen(
                                     .also {
                                         it.setAnalyzer(Executors.newSingleThreadExecutor()) { imageProxy ->
                                             val mediaImage = imageProxy.image
-                                            if (mediaImage != null && scanResult !is ScanResult.Scanning) {
+                                            if (mediaImage != null && scanResult == ScanResult.Idle) {
                                                 val image = InputImage.fromMediaImage(
                                                     mediaImage,
                                                     imageProxy.imageInfo.rotationDegrees

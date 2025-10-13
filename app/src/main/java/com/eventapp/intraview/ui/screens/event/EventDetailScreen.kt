@@ -1,6 +1,7 @@
 package com.eventapp.intraview.ui.screens.event
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -47,6 +48,7 @@ fun EventDetailScreen(
     val recentPhotos by viewModel.recentPhotos.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val isHost by viewModel.isHost.collectAsState()
     val context = LocalContext.current
     
     LaunchedEffect(eventId) {
@@ -63,7 +65,7 @@ fun EventDetailScreen(
                     }
                 },
                 actions = {
-                    if (viewModel.isHost) {
+                    if (isHost) {
                         IconButton(onClick = onNavigateToScanner) {
                             Icon(Icons.Default.QrCodeScanner, contentDescription = stringResource(R.string.scan_qr))
                         }
@@ -194,13 +196,15 @@ fun EventDetailScreen(
                                 Text(stringResource(R.string.share_invite))
                             }
                             
-                            Button(
-                                onClick = onNavigateToQR,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Default.QrCode, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(stringResource(R.string.my_qr))
+                            if (!isHost) {
+                                Button(
+                                    onClick = onNavigateToQR,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(Icons.Default.QrCode, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(stringResource(R.string.my_qr))
+                                }
                             }
                         }
                         
@@ -218,7 +222,10 @@ fun EventDetailScreen(
                                 fontWeight = FontWeight.Bold
                             )
                             
-                            TextButton(onClick = { /* Navigate to guests list */ }) {
+                            TextButton(onClick = { 
+                                Log.d("EventDetailScreen", "View All clicked. Invitations: ${invitations.size}, GuestIds: ${event!!.guestIds.size}")
+                                // TODO: Navigate to guests list screen when implemented
+                            }) {
                                 Text(stringResource(R.string.view_all))
                             }
                         }

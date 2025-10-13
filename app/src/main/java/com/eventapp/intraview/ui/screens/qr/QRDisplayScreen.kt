@@ -31,6 +31,7 @@ fun QRDisplayScreen(
     val myInvitation by viewModel.myInvitation.collectAsState()
     val qrBitmap by viewModel.qrBitmap.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
     
     LaunchedEffect(eventId) {
         viewModel.loadEventAndInvitation(eventId)
@@ -154,10 +155,38 @@ fun QRDisplayScreen(
             }
             else -> {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("No invitation found")
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = error ?: "No invitation found",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Text(
+                            text = "Please try rejoining the event from the home screen",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        Button(onClick = onNavigateBack) {
+                            Text("Go Back")
+                        }
+                    }
                 }
             }
         }

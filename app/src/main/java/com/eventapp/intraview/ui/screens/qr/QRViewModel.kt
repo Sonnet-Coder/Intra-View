@@ -2,6 +2,7 @@ package com.eventapp.intraview.ui.screens.qr
 
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eventapp.intraview.data.model.Event
@@ -27,6 +28,10 @@ class QRViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
     
+    companion object {
+        private const val TAG = "QRViewModel"
+    }
+    
     private val _event = MutableStateFlow<Event?>(null)
     val event: StateFlow<Event?> = _event.asStateFlow()
     
@@ -48,16 +53,25 @@ class QRViewModel @Inject constructor(
     fun loadEventAndInvitation(eventId: String) {
         viewModelScope.launch {
             _isLoading.value = true
+            Log.d(TAG, "Loading event and invitation for eventId: $eventId")
             
             // Load event
-            _event.value = eventRepository.getEvent(eventId)
+            val event = eventRepository.getEvent(eventId)
+            _event.value = event
+            Log.d(TAG, "Event loaded: ${event?.name}")
             
             // Load my invitation
-            _myInvitation.value = invitationRepository.getMyInvitationForEvent(eventId)
+            val invitation = invitationRepository.getMyInvitationForEvent(eventId)
+            _myInvitation.value = invitation
             
-            // Generate QR code
-            _myInvitation.value?.let { invitation ->
+            if (invitation != null) {
+                Log.d(TAG, "Invitation found for event. QR Token: ${invitation.qrToken}, CheckedIn: ${invitation.checkedIn}")
+                // Generate QR code
                 _qrBitmap.value = generateQRCode(invitation.qrToken)
+                Log.d(TAG, "QR code generated successfully")
+            } else {
+                Log.w(TAG, "No invitation found for current user in event: $eventId")
+                _error.value = "No invitation found. Please try rejoining the event."
             }
             
             _isLoading.value = false
