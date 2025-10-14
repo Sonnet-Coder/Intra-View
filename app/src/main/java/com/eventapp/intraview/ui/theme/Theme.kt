@@ -16,30 +16,78 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
+// Modern Dark Color Scheme - Deep and elegant
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryBlueLight,
+    onPrimary = Color(0xFF0A1929),
+    primaryContainer = PrimaryBlueDark,
+    onPrimaryContainer = Color(0xFFD4E3FF),
+    
+    secondary = SecondaryGreen,
+    onSecondary = Color(0xFF003828),
+    secondaryContainer = Color(0xFF047857),
+    onSecondaryContainer = Color(0xFFD1FAE5),
+    
+    tertiary = SecondaryAmber,
+    onTertiary = Color(0xFF3D2200),
+    tertiaryContainer = Color(0xFFD97706),
+    onTertiaryContainer = Color(0xFFFEF3C7),
+    
+    error = ErrorRed,
+    onError = Color.White,
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+    
+    background = BackgroundDark,
+    onBackground = Color(0xFFE2E8F0),
+    
+    surface = SurfaceDark,
+    onSurface = Color(0xFFE2E8F0),
+    surfaceVariant = SurfaceDarkElevated,
+    onSurfaceVariant = Color(0xFFCBD5E1),
+    
+    outline = Color(0xFF475569),
+    outlineVariant = Color(0xFF334155)
 )
 
+// Modern Light Color Scheme - Clean and minimal
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryBlue,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFDEEBFF),
+    onPrimaryContainer = Color(0xFF001D35),
+    
     secondary = SecondaryGreen,
-    tertiary = Pink40,
-    background = BackgroundLight,
-    surface = SurfaceLight,
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFA7F3D0),
+    onSecondaryContainer = Color(0xFF002114),
+    
+    tertiary = SecondaryAmber,
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFFFEF3C7),
+    onTertiaryContainer = Color(0xFF3D2200),
+    
     error = ErrorRed,
-    onPrimary = SurfaceLight,
-    onSecondary = SurfaceLight,
-    onTertiary = SurfaceLight,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
+    onError = Color.White,
+    errorContainer = Color(0xFFFEE2E2),
+    onErrorContainer = Color(0xFF410002),
+    
+    background = BackgroundLight,
+    onBackground = TextPrimary,
+    
+    surface = SurfaceLight,
+    onSurface = TextPrimary,
+    surfaceVariant = SurfaceElevated,
+    onSurfaceVariant = TextSecondary,
+    
+    outline = DividerLight,
+    outlineVariant = Color(0xFFF1F5F9)
 )
 
 @Composable
 fun IntraViewTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -55,8 +103,9 @@ fun IntraViewTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // Modern edge-to-edge with transparent status bar
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 

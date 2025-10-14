@@ -2,22 +2,29 @@ package com.eventapp.intraview.ui.screens.event
 
 import android.content.Intent
 import android.util.Log
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -30,6 +37,8 @@ import coil.compose.AsyncImage
 import com.eventapp.intraview.R
 import com.eventapp.intraview.ui.components.ErrorState
 import com.eventapp.intraview.ui.components.LoadingState
+import com.eventapp.intraview.ui.theme.AppDimensions
+import com.eventapp.intraview.ui.theme.AppSpacing
 import com.eventapp.intraview.util.DateFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -145,31 +154,39 @@ fun EventDetailScreen(
                         }
                     }
                     
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(AppSpacing.normal)) {
                         // Description
                         if (event!!.description.isNotEmpty()) {
-                            Text(
-                                text = event!!.description,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
+                            AnimatedVisibility(
+                                visible = true,
+                                enter = fadeIn() + expandVertically()
+                            ) {
+                                Column {
+                                    Text(
+                                        text = event!!.description,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(AppSpacing.extraLarge))
+                                }
+                            }
                         }
                         
-                        // Quick Actions
+                        // Quick Actions with modern cards
                         Text(
                             text = "Quick Actions",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold
                         )
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.medium))
                         
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium)
                         ) {
-                            Button(
+                            FilledTonalButton(
                                 onClick = {
                                     val inviteCode = viewModel.getInviteCode()
                                     val shareText = """
@@ -189,48 +206,85 @@ fun EventDetailScreen(
                                     }
                                     context.startActivity(Intent.createChooser(intent, "Share Invitation"))
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(AppDimensions.buttonHeightMedium),
+                                shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium)
                             ) {
-                                Icon(Icons.Default.Share, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(stringResource(R.string.share_invite))
+                                Icon(
+                                    imageVector = Icons.Outlined.Share,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(AppDimensions.iconSizeMedium)
+                                )
+                                Spacer(modifier = Modifier.width(AppSpacing.small))
+                                Text(
+                                    text = stringResource(R.string.share_invite),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                             }
                             
                             if (!isHost) {
-                                Button(
+                                FilledTonalButton(
                                     onClick = onNavigateToQR,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(AppDimensions.buttonHeightMedium),
+                                    shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium)
                                 ) {
-                                    Icon(Icons.Default.QrCode, contentDescription = null)
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(R.string.my_qr))
+                                    Icon(
+                                        imageVector = Icons.Outlined.QrCode,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(AppDimensions.iconSizeMedium)
+                                    )
+                                    Spacer(modifier = Modifier.width(AppSpacing.small))
+                                    Text(
+                                        text = stringResource(R.string.my_qr),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
                                 }
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.huge))
                         
-                        // Guests Section
+                        // Guests Section with modern header
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "${stringResource(R.string.guests)} (${invitations.size})",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Group,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(AppDimensions.iconSizeMedium),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "${stringResource(R.string.guests)} (${invitations.size})",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                             
-                            TextButton(onClick = { 
-                                Log.d("EventDetailScreen", "View All clicked. Invitations: ${invitations.size}, GuestIds: ${event!!.guestIds.size}")
-                                // TODO: Navigate to guests list screen when implemented
-                            }) {
-                                Text(stringResource(R.string.view_all))
+                            TextButton(
+                                onClick = { 
+                                    Log.d("EventDetailScreen", "View All clicked. Invitations: ${invitations.size}, GuestIds: ${event!!.guestIds.size}")
+                                    // TODO: Navigate to guests list screen when implemented
+                                },
+                                shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.view_all),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.medium))
                         
                         if (invitations.isNotEmpty()) {
                             LazyRow(
@@ -263,28 +317,49 @@ fun EventDetailScreen(
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.huge))
                         
-                        // Photos Section
+                        // Photos Section with modern header
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "${stringResource(R.string.photos)} (${event!!.photoCount})",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.PhotoLibrary,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(AppDimensions.iconSizeMedium),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "${stringResource(R.string.photos)} (${event!!.photoCount})",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                             
-                            TextButton(onClick = onNavigateToPhotos) {
-                                Icon(Icons.Default.Add, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(R.string.upload))
+                            TextButton(
+                                onClick = onNavigateToPhotos,
+                                shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(AppDimensions.iconSizeSmall)
+                                )
+                                Spacer(modifier = Modifier.width(AppSpacing.extraSmall))
+                                Text(
+                                    text = stringResource(R.string.upload),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.medium))
                         
                         if (recentPhotos.isNotEmpty()) {
                             LazyRow(
@@ -314,28 +389,49 @@ fun EventDetailScreen(
                             )
                         }
                         
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.huge))
                         
-                        // Playlists Section
+                        // Playlists Section with modern header
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = stringResource(R.string.playlists),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.MusicNote,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(AppDimensions.iconSizeMedium),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = stringResource(R.string.playlists),
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                             
-                            TextButton(onClick = onNavigateToPlaylist) {
-                                Icon(Icons.Default.Add, contentDescription = null)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(stringResource(R.string.add_playlist))
+                            TextButton(
+                                onClick = onNavigateToPlaylist,
+                                shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(AppDimensions.iconSizeSmall)
+                                )
+                                Spacer(modifier = Modifier.width(AppSpacing.extraSmall))
+                                Text(
+                                    text = stringResource(R.string.add_playlist),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(AppSpacing.medium))
                         
                         if (event!!.playlistUrls.isNotEmpty()) {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
