@@ -2,8 +2,8 @@
 <resources>
     <string name="app_name">Lumen</string>
     <string name="login_title">Welcome to Lumen</string>
-    <string name="login_subtitle">Host and manage your events</string>
-    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="login_subtitle">Host and manage your events</string>   
+    <string name="sign_in">Sign In</string>
     <string name="loading">Loading…</string>
     <string name="error_occurred">An error occurred</string>
     <string name="retry">Retry</string>

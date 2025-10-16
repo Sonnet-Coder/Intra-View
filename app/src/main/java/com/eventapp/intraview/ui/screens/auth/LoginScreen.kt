@@ -91,6 +91,12 @@ fun LoginScreen(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Image(
+                        painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+                        contentDescription = stringResource(R.string.app_name),
+                        modifier = Modifier.size(96.dp)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
                         text = stringResource(R.string.app_name),
                         style = MaterialTheme.typography.displayLarge,
@@ -131,7 +137,7 @@ fun LoginScreen(
                             launcher.launch(signInIntent)
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .width(200.dp)
                             .height(56.dp),
                         enabled = loginState != LoginState.Loading,
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
@@ -151,8 +157,14 @@ fun LoginScreen(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_google_logo),
+                                    contentDescription = stringResource(R.string.sign_in),
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = stringResource(R.string.sign_in_with_google),
+                                    text = stringResource(R.string.sign_in),
                                     style = MaterialTheme.typography.labelLarge
                                 )
                             }
