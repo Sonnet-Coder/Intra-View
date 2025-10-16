@@ -21,31 +21,31 @@ private val DarkColorScheme = darkColorScheme(
     primary = PrimaryBlueLight,
     onPrimary = Color(0xFF0A1929),
     primaryContainer = PrimaryBlueDark,
-    onPrimaryContainer = Color(0xFFD4E3FF),
-    
+    onPrimaryContainer = Color.White,
+
     secondary = SecondaryGreen,
-    onSecondary = Color(0xFF003828),
-    secondaryContainer = Color(0xFF047857),
-    onSecondaryContainer = Color(0xFFD1FAE5),
-    
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFFE6E0FF),
+    onSecondaryContainer = Color(0xFF1B1540),
+
     tertiary = SecondaryAmber,
-    onTertiary = Color(0xFF3D2200),
-    tertiaryContainer = Color(0xFFD97706),
-    onTertiaryContainer = Color(0xFFFEF3C7),
-    
+    onTertiary = TextPrimary,
+    tertiaryContainer = Color(0xFF424242),
+    onTertiaryContainer = Color.White,
+
     error = ErrorRed,
     onError = Color.White,
     errorContainer = Color(0xFF93000A),
     onErrorContainer = Color(0xFFFFDAD6),
-    
+
     background = BackgroundDark,
     onBackground = Color(0xFFE2E8F0),
-    
+
     surface = SurfaceDark,
     onSurface = Color(0xFFE2E8F0),
     surfaceVariant = SurfaceDarkElevated,
     onSurfaceVariant = Color(0xFFCBD5E1),
-    
+
     outline = Color(0xFF475569),
     outlineVariant = Color(0xFF334155)
 )
@@ -54,32 +54,32 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryBlue,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFDEEBFF),
-    onPrimaryContainer = Color(0xFF001D35),
-    
+    primaryContainer = PrimaryBlueLight,
+    onPrimaryContainer = TextPrimary,
+
     secondary = SecondaryGreen,
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFFA7F3D0),
-    onSecondaryContainer = Color(0xFF002114),
-    
+    secondaryContainer = Color(0xFFE6E0FF),
+    onSecondaryContainer = TextPrimary,
+
     tertiary = SecondaryAmber,
-    onTertiary = Color.White,
-    tertiaryContainer = Color(0xFFFEF3C7),
-    onTertiaryContainer = Color(0xFF3D2200),
-    
+    onTertiary = TextPrimary,
+    tertiaryContainer = Color(0xFFEEEEEE),
+    onTertiaryContainer = TextPrimary,
+
     error = ErrorRed,
     onError = Color.White,
     errorContainer = Color(0xFFFEE2E2),
     onErrorContainer = Color(0xFF410002),
-    
+
     background = BackgroundLight,
     onBackground = TextPrimary,
-    
+
     surface = SurfaceLight,
     onSurface = TextPrimary,
     surfaceVariant = SurfaceElevated,
     onSurfaceVariant = TextSecondary,
-    
+
     outline = DividerLight,
     outlineVariant = Color(0xFFF1F5F9)
 )
