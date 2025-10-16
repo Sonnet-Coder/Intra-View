@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.eventapp.intraview.R
 import com.eventapp.intraview.ui.components.EmptyState
 import com.eventapp.intraview.ui.components.EventCard
+import com.eventapp.intraview.ui.components.FloatingActionMenu
 import com.eventapp.intraview.ui.components.LoadingState
 import com.eventapp.intraview.ui.theme.AppDimensions
 import com.eventapp.intraview.ui.theme.AppSpacing
@@ -54,9 +55,6 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.my_events)) },
                 actions = {
-                    IconButton(onClick = onCreateEventClick) {
-                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.create_event))
-                    }
                     IconButton(onClick = {
                         scope.launch {
                             viewModel.signOut(context)
@@ -67,13 +65,6 @@ fun HomeScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.showInviteDialog() }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.join_event))
-            }
         }
     ) { paddingValues ->
         Column(
@@ -156,6 +147,16 @@ fun HomeScreen(
                 }
             }
         }
+        
+        // Floating Action Menu in bottom right corner
+        FloatingActionMenu(
+            onHostEventClick = onCreateEventClick,
+            onJoinEventClick = { viewModel.showInviteDialog() },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(AppSpacing.normal)
+        )
     }
     
     // Invite Code Dialog with modern styling

@@ -31,11 +31,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.eventapp.intraview.R
 import com.eventapp.intraview.ui.components.ErrorState
+import com.eventapp.intraview.ui.components.EventSettingsDialog
 import com.eventapp.intraview.ui.components.LoadingState
 import com.eventapp.intraview.ui.theme.AppDimensions
 import com.eventapp.intraview.ui.theme.AppSpacing
@@ -60,6 +62,9 @@ fun EventDetailScreen(
     val isHost by viewModel.isHost.collectAsState()
     val context = LocalContext.current
     
+    // State for settings dialog
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    
     LaunchedEffect(eventId) {
         viewModel.loadEvent(eventId)
     }
@@ -75,9 +80,7 @@ fun EventDetailScreen(
                 },
                 actions = {
                     if (isHost) {
-                        IconButton(onClick = onNavigateToScanner) {
-                            Icon(Icons.Default.QrCodeScanner, contentDescription = stringResource(R.string.scan_qr))
-                        }
+                        // Settings button - removed scanner from here
                     }
                 }
             )
@@ -135,7 +138,8 @@ fun EventDetailScreen(
                                 text = event!!.name,
                                 style = MaterialTheme.typography.headlineLarge,
                                 color = Color.White,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                textDecoration = if (event!!.isCancelled) TextDecoration.LineThrough else null
                             )
                             
                             Spacer(modifier = Modifier.height(4.dp))
@@ -143,13 +147,15 @@ fun EventDetailScreen(
                             Text(
                                 text = DateFormatter.formatDateTime(event!!.date),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = Color.White.copy(alpha = 0.9f)
+                                color = Color.White.copy(alpha = 0.9f),
+                                textDecoration = if (event!!.isCancelled) TextDecoration.LineThrough else null
                             )
                             
                             Text(
                                 text = event!!.location,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White.copy(alpha = 0.9f)
+                                color = Color.White.copy(alpha = 0.9f),
+                                textDecoration = if (event!!.isCancelled) TextDecoration.LineThrough else null
                             )
                         }
                     }
@@ -223,7 +229,27 @@ fun EventDetailScreen(
                                 )
                             }
                             
-                            if (!isHost) {
+                            // Settings button for host, QR button for guests
+                            if (isHost) {
+                                FilledTonalButton(
+                                    onClick = { showSettingsDialog = true },
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(AppDimensions.buttonHeightMedium),
+                                    shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Settings,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(AppDimensions.iconSizeMedium)
+                                    )
+                                    Spacer(modifier = Modifier.width(AppSpacing.small))
+                                    Text(
+                                        text = "Settings",
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                }
+                            } else {
                                 FilledTonalButton(
                                     onClick = onNavigateToQR,
                                     modifier = Modifier
@@ -317,150 +343,188 @@ fun EventDetailScreen(
                             }
                         }
                         
-                        Spacer(modifier = Modifier.height(AppSpacing.huge))
-                        
-                        // Photos Section with modern header
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.PhotoLibrary,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(AppDimensions.iconSizeMedium),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = "${stringResource(R.string.photos)} (${event!!.photoCount})",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
+                        // Shared Photo Album Section (show to host always, to guests only if enabled)
+                        if (isHost || event!!.showPhotosToGuests) {
+                            Spacer(modifier = Modifier.height(AppSpacing.huge))
                             
-                            TextButton(
-                                onClick = onNavigateToPhotos,
-                                shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(AppDimensions.iconSizeSmall)
-                                )
-                                Spacer(modifier = Modifier.width(AppSpacing.extraSmall))
-                                Text(
-                                    text = stringResource(R.string.upload),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(AppSpacing.medium))
-                        
-                        if (recentPhotos.isNotEmpty()) {
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                items(recentPhotos) { photo ->
-                                    Card(
-                                        modifier = Modifier
-                                            .size(100.dp)
-                                            .clickable(onClick = onNavigateToPhotos),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ) {
-                                        AsyncImage(
-                                            model = photo.thumbnailUrl,
-                                            contentDescription = "Photo",
-                                            modifier = Modifier.fillMaxSize(),
-                                            contentScale = ContentScale.Crop
-                                        )
-                                    }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.PhotoLibrary,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(AppDimensions.iconSizeMedium),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "Shared Photo Album (${event!!.photoCount})",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                                
+                                TextButton(
+                                    onClick = onNavigateToPhotos,
+                                    shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(AppDimensions.iconSizeSmall)
+                                    )
+                                    Spacer(modifier = Modifier.width(AppSpacing.extraSmall))
+                                    Text(
+                                        text = stringResource(R.string.upload),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
                                 }
                             }
-                        } else {
-                            Text(
-                                text = stringResource(R.string.no_photos),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.height(AppSpacing.huge))
-                        
-                        // Playlists Section with modern header
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.MusicNote,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(AppDimensions.iconSizeMedium),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                                Text(
-                                    text = stringResource(R.string.playlists),
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
                             
-                            TextButton(
-                                onClick = onNavigateToPlaylist,
-                                shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(AppDimensions.iconSizeSmall)
-                                )
-                                Spacer(modifier = Modifier.width(AppSpacing.extraSmall))
-                                Text(
-                                    text = stringResource(R.string.add_playlist),
-                                    style = MaterialTheme.typography.labelLarge
-                                )
-                            }
-                        }
-                        
-                        Spacer(modifier = Modifier.height(AppSpacing.medium))
-                        
-                        if (event!!.playlistUrls.isNotEmpty()) {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                event!!.playlistUrls.forEach { url ->
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable(onClick = onNavigateToPlaylist),
-                                        shape = RoundedCornerShape(8.dp)
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(16.dp),
-                                            verticalAlignment = Alignment.CenterVertically
+                            Spacer(modifier = Modifier.height(AppSpacing.medium))
+                            
+                            if (recentPhotos.isNotEmpty()) {
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(recentPhotos) { photo ->
+                                        Card(
+                                            modifier = Modifier
+                                                .size(100.dp)
+                                                .clickable(onClick = onNavigateToPhotos),
+                                            shape = RoundedCornerShape(8.dp)
                                         ) {
-                                            Icon(
-                                                Icons.Default.MusicNote,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.primary
+                                            AsyncImage(
+                                                model = photo.thumbnailUrl,
+                                                contentDescription = "Photo",
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Crop
                                             )
-                                            Spacer(modifier = Modifier.width(16.dp))
-                                            Text("Playlist", style = MaterialTheme.typography.bodyMedium)
                                         }
                                     }
                                 }
+                            } else {
+                                Text(
+                                    text = stringResource(R.string.no_photos),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        
+                        // Shared Music Playlist Section (show to host always, to guests only if enabled)
+                        if (isHost || event!!.showPlaylistsToGuests) {
+                            Spacer(modifier = Modifier.height(AppSpacing.huge))
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.MusicNote,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(AppDimensions.iconSizeMedium),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Text(
+                                        text = "Shared Music Playlist",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                                
+                                TextButton(
+                                    onClick = onNavigateToPlaylist,
+                                    shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(AppDimensions.iconSizeSmall)
+                                    )
+                                    Spacer(modifier = Modifier.width(AppSpacing.extraSmall))
+                                    Text(
+                                        text = stringResource(R.string.add_playlist),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(AppSpacing.medium))
+                            
+                            if (event!!.playlistUrls.isNotEmpty()) {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    event!!.playlistUrls.forEach { url ->
+                                        Card(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable(onClick = onNavigateToPlaylist),
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(16.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.MusicNote,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                                Spacer(modifier = Modifier.width(16.dp))
+                                                Text("Playlist", style = MaterialTheme.typography.bodyMedium)
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if (isHost) {
+                                Text(
+                                    text = "No playlists yet",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
                 }
             }
+        }
+        
+        // Settings Dialog for hosts
+        if (showSettingsDialog && event != null) {
+            EventSettingsDialog(
+                event = event!!,
+                onDismiss = { showSettingsDialog = false },
+                onChangeGuestLimit = { newLimit ->
+                    viewModel.updateEventField("maxGuests", newLimit)
+                },
+                onTogglePublic = { isPublic ->
+                    viewModel.updateEventField("isPublic", isPublic)
+                },
+                onToggleSharedAlbum = { visible ->
+                    viewModel.updateEventField("showPhotosToGuests", visible)
+                },
+                onTogglePlaylist = { visible ->
+                    viewModel.updateEventField("showPlaylistsToGuests", visible)
+                },
+                onCancelEvent = {
+                    viewModel.updateEventField("isCancelled", true)
+                },
+                onDeleteEvent = {
+                    viewModel.deleteEvent()
+                    onNavigateBack()
+                },
+                onCheckInScan = onNavigateToScanner
+            )
         }
     }
 }

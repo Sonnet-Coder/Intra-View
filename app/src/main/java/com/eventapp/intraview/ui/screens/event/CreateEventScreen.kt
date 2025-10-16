@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.eventapp.intraview.R
+import com.eventapp.intraview.ui.components.LocationData
+import com.eventapp.intraview.ui.components.MapLocationPicker
 import com.eventapp.intraview.ui.theme.AppDimensions
 import com.eventapp.intraview.ui.theme.AppSpacing
 import java.text.SimpleDateFormat
@@ -45,7 +47,13 @@ fun CreateEventScreen(
     val description by viewModel.description.collectAsState()
     val date by viewModel.date.collectAsState()
     val location by viewModel.location.collectAsState()
+    val latitude by viewModel.latitude.collectAsState()
+    val longitude by viewModel.longitude.collectAsState()
     val selectedBackgroundIndex by viewModel.selectedBackgroundIndex.collectAsState()
+    val musicPlaylistUrl by viewModel.musicPlaylistUrl.collectAsState()
+    val sharedAlbumUrl by viewModel.sharedAlbumUrl.collectAsState()
+    val maxGuests by viewModel.maxGuests.collectAsState()
+    val isPublic by viewModel.isPublic.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val createdEventId by viewModel.createdEventId.collectAsState()
@@ -54,6 +62,10 @@ fun CreateEventScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var showDurationPicker by remember { mutableStateOf(false) }
+    var showMapPicker by remember { mutableStateOf(false) }
+    var showMaxGuestsPicker by remember { mutableStateOf(false) }
+    var showMusicPlaylist by remember { mutableStateOf(false) }
+    var showSharedAlbum by remember { mutableStateOf(false) }
     
     val durationMinutes by viewModel.durationMinutes.collectAsState()
     
@@ -177,7 +189,7 @@ fun CreateEventScreen(
                 )
             )
             
-            // Location with icon
+            // Location with icon and map picker button
             OutlinedTextField(
                 value = location,
                 onValueChange = { viewModel.setLocation(it) },
@@ -191,6 +203,15 @@ fun CreateEventScreen(
                         else 
                             MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                },
+                trailingIcon = {
+                    IconButton(onClick = { showMapPicker = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Map,
+                            contentDescription = stringResource(R.string.pick_location),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
@@ -229,6 +250,186 @@ fun CreateEventScreen(
                     disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
+            
+            // Maximum Guests with icon
+            OutlinedTextField(
+                value = maxGuests?.toString() ?: stringResource(R.string.no_limit),
+                onValueChange = { },
+                label = { Text(stringResource(R.string.max_guests)) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Group,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.ArrowDropDown,
+                        contentDescription = null
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { showMaxGuestsPicker = true },
+                readOnly = true,
+                enabled = false,
+                shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium),
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledBorderColor = MaterialTheme.colorScheme.outline,
+                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    disabledLeadingIconColor = MaterialTheme.colorScheme.primary,
+                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            )
+            
+            // Music Playlist Toggle and URL (Optional)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AppDimensions.cornerRadiusMedium))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium)
+                    )
+                    .padding(AppSpacing.normal),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.MusicNote,
+                        contentDescription = null,
+                        tint = if (showMusicPlaylist) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.music_playlist),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Switch(
+                    checked = showMusicPlaylist,
+                    onCheckedChange = { 
+                        showMusicPlaylist = it
+                        if (!it) viewModel.setMusicPlaylistUrl("")
+                    }
+                )
+            }
+            
+            AnimatedVisibility(
+                visible = showMusicPlaylist,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                OutlinedTextField(
+                    value = musicPlaylistUrl,
+                    onValueChange = { viewModel.setMusicPlaylistUrl(it) },
+                    label = { Text("Playlist URL") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium),
+                    placeholder = { Text("Spotify, Apple Music, etc.") }
+                )
+            }
+            
+            // Shared Album Toggle and URL (Optional)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AppDimensions.cornerRadiusMedium))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium)
+                    )
+                    .padding(AppSpacing.normal),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.PhotoLibrary,
+                        contentDescription = null,
+                        tint = if (showSharedAlbum) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.shared_album),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+                Switch(
+                    checked = showSharedAlbum,
+                    onCheckedChange = { 
+                        showSharedAlbum = it
+                        if (!it) viewModel.setSharedAlbumUrl("")
+                    }
+                )
+            }
+            
+            AnimatedVisibility(
+                visible = showSharedAlbum,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                OutlinedTextField(
+                    value = sharedAlbumUrl,
+                    onValueChange = { viewModel.setSharedAlbumUrl(it) },
+                    label = { Text("Album URL") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium),
+                    placeholder = { Text("Google Photos, iCloud, etc.") }
+                )
+            }
+            
+            // Public/Private Toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AppDimensions.cornerRadiusMedium))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium)
+                    )
+                    .padding(AppSpacing.normal),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.small),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (isPublic) Icons.Outlined.Public else Icons.Outlined.Lock,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Column {
+                        Text(
+                            text = if (isPublic) stringResource(R.string.public_event) else stringResource(R.string.private_event),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = if (isPublic) "Visible on discover page" else "Invite only",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Switch(
+                    checked = isPublic,
+                    onCheckedChange = { viewModel.setIsPublic(it) }
+                )
+            }
             
             // Background Selection with modern header
             Row(
@@ -480,6 +681,72 @@ fun CreateEventScreen(
                         }
                     }
                 }
+            )
+        }
+        
+        // Max Guests Picker Dialog
+        if (showMaxGuestsPicker) {
+            val guestOptions = listOf(
+                null to stringResource(R.string.no_limit),
+                10 to "10 guests",
+                25 to "25 guests",
+                50 to "50 guests",
+                100 to "100 guests",
+                200 to "200 guests",
+                500 to "500 guests"
+            )
+            
+            AlertDialog(
+                onDismissRequest = { showMaxGuestsPicker = false },
+                confirmButton = {
+                    TextButton(onClick = { showMaxGuestsPicker = false }) {
+                        Text("Close")
+                    }
+                },
+                title = { Text(stringResource(R.string.max_guests)) },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        guestOptions.forEach { (count, label) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.setMaxGuests(count)
+                                        showMaxGuestsPicker = false
+                                    }
+                                    .padding(vertical = 12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(label)
+                                if (count == maxGuests) {
+                                    Text(
+                                        "✓",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+        }
+        
+        // Map Location Picker Dialog
+        if (showMapPicker) {
+            MapLocationPicker(
+                initialLocation = if (latitude != null && longitude != null) {
+                    LocationData(latitude!!, longitude!!, location)
+                } else null,
+                onLocationSelected = { locationData ->
+                    viewModel.setLocation(locationData.address)
+                    viewModel.setLocationCoordinates(locationData.latitude, locationData.longitude)
+                },
+                onDismiss = { showMapPicker = false }
             )
         }
     }

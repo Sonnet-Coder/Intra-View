@@ -102,6 +102,11 @@ dependencies {
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.5.0")
 
+    // Google Maps for Compose
+    implementation("com.google.maps.android:maps-compose:4.3.0")
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
     // ML Kit Barcode Scanning
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
 

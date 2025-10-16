@@ -142,6 +142,19 @@ class HomeViewModel @Inject constructor(
             return event
         }
         
+        // Check guest limit before allowing new guest to join
+        val currentGuestCount = event.guestIds.size
+        val maxGuests = event.maxGuests
+        
+        if (maxGuests != null && currentGuestCount >= maxGuests) {
+            Log.w(TAG, "Event is full: $currentGuestCount/$maxGuests guests")
+            _error.value = "Event is full! Maximum capacity of $maxGuests guests reached."
+            _isJoiningEvent.value = false
+            return null
+        }
+        
+        Log.d(TAG, "Guest limit check passed: $currentGuestCount/${maxGuests ?: "No Limit"} guests")
+        
         // Add user to event's guest list
         Log.d(TAG, "Adding user to event's guest list")
         val addGuestResult = eventRepository.addGuestToEvent(event.eventId, userId)

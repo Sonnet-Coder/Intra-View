@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Intra-View</string>
-    <string name="login_title">Welcome to Intra-View</string>
-    <string name="login_subtitle">Create and manage your events</string>
+    <string name="app_name">Lumen</string>
+    <string name="login_title">Welcome to Lumen</string>
+    <string name="login_subtitle">Host and manage your events</string>
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="loading">Loading…</string>
     <string name="error_occurred">An error occurred</string>
@@ -42,6 +42,19 @@
     <string name="no_events">No events yet</string>
     <string name="no_photos">No photos yet</string>
     <string name="no_guests">No guests yet</string>
+    <string name="host_event">Host Event</string>
+    <string name="music_playlist">Music Playlist (Optional)</string>
+    <string name="shared_album">Shared Album (Optional)</string>
+    <string name="max_guests">Maximum Guests</string>
+    <string name="no_limit">No Limit</string>
+    <string name="public_event">Public Event</string>
+    <string name="private_event">Private Event</string>
+    <string name="pick_location">Pick Location on Map</string>
+    <string name="select_location">Select Location</string>
+    <string name="confirm_location">Confirm Location</string>
+    <string name="search_location">Search location...</string>
+    <string name="event_full">Event is full! Maximum capacity reached.</string>
+    <string name="event_full_with_count">Event is full! Maximum capacity of %d guests reached.</string>
 </resources>
 
 

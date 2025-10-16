@@ -72,6 +72,8 @@ class EventDetailViewModel @Inject constructor(
                 .collect { event ->
                     _event.value = event
                     Log.d(TAG, "Event updated: ${event?.name}, guestIds count: ${event?.guestIds?.size}")
+                    Log.d(TAG, "Event sharedAlbumUrl: '${event?.sharedAlbumUrl}' (null: ${event?.sharedAlbumUrl == null})")
+                    Log.d(TAG, "Event musicPlaylistUrl: '${event?.musicPlaylistUrl}' (null: ${event?.musicPlaylistUrl == null})")
                     _isHost.value = event?.hostId == authRepository.currentUserId
                     Log.d(TAG, "Host status updated: ${_isHost.value}")
                     _isLoading.value = false
@@ -116,6 +118,38 @@ class EventDetailViewModel @Inject constructor(
     
     fun getInviteCode(): String? {
         return _event.value?.inviteCode
+    }
+    
+    fun updateEventField(field: String, value: Any?) {
+        viewModelScope.launch {
+            val event = _event.value ?: return@launch
+            try {
+                val updates: Map<String, Any> = if (value == null) {
+                    Log.d(TAG, "Deleting field: $field")
+                    mapOf(field to com.google.firebase.firestore.FieldValue.delete())
+                } else {
+                    Log.d(TAG, "Updating field: $field = $value")
+                    mapOf(field to value)
+                }
+                val result = eventRepository.updateEvent(event.eventId, updates)
+                Log.d(TAG, "Update result: $result")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating event field: ${e.message}", e)
+                _error.value = e.message
+            }
+        }
+    }
+    
+    fun deleteEvent() {
+        viewModelScope.launch {
+            val event = _event.value ?: return@launch
+            try {
+                eventRepository.deleteEvent(event.eventId)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting event: ${e.message}", e)
+                _error.value = e.message
+            }
+        }
     }
 }
 

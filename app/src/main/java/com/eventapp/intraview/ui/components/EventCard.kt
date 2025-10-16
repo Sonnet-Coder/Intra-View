@@ -22,12 +22,14 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.eventapp.intraview.data.model.Event
 import com.eventapp.intraview.util.DateFormatter
 import com.eventapp.intraview.ui.theme.AppDimensions
 import com.eventapp.intraview.ui.theme.AppSpacing
+import androidx.compose.foundation.shape.CircleShape
 
 @Composable
 fun EventCard(
@@ -89,6 +91,24 @@ fun EventCard(
                     )
             )
             
+            // Small map view in top right corner if location coordinates exist
+            if (event.latitude != null && event.longitude != null) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(AppSpacing.normal)
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(AppDimensions.cornerRadiusMedium))
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    CompactMapView(
+                        latitude = event.latitude,
+                        longitude = event.longitude,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+            
             // Event Info with refined spacing
             Column(
                 modifier = Modifier
@@ -101,7 +121,8 @@ fun EventCard(
                     style = MaterialTheme.typography.headlineMedium,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold,
-                    maxLines = 2
+                    maxLines = 2,
+                    textDecoration = if (event.isCancelled) TextDecoration.LineThrough else null
                 )
                 
                 Spacer(modifier = Modifier.height(AppSpacing.small))
@@ -125,7 +146,8 @@ fun EventCard(
                         Text(
                             text = DateFormatter.formatDate(event.date),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.9f)
+                            color = Color.White.copy(alpha = 0.9f),
+                            textDecoration = if (event.isCancelled) TextDecoration.LineThrough else null
                         )
                     }
                     

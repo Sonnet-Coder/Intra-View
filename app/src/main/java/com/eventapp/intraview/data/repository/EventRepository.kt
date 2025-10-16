@@ -29,8 +29,14 @@ class EventRepository @Inject constructor(
         description: String,
         date: Timestamp,
         location: String,
+        latitude: Double?,
+        longitude: Double?,
         durationMinutes: Int,
-        backgroundImageUrl: String
+        backgroundImageUrl: String,
+        musicPlaylistUrl: String?,
+        sharedAlbumUrl: String?,
+        maxGuests: Int?,
+        isPublic: Boolean
     ): Result<Event> {
         return try {
             val inviteCode = InviteCodeGenerator.generate()
@@ -43,12 +49,18 @@ class EventRepository @Inject constructor(
                 description = description,
                 date = date,
                 location = location,
+                latitude = latitude,
+                longitude = longitude,
                 durationMinutes = durationMinutes,
                 backgroundImageUrl = backgroundImageUrl,
                 inviteCode = inviteCode,
                 guestIds = emptyList(),
                 photoCount = 0,
                 playlistUrls = emptyList(),
+                musicPlaylistUrl = musicPlaylistUrl,
+                sharedAlbumUrl = sharedAlbumUrl,
+                maxGuests = maxGuests,
+                isPublic = isPublic,
                 createdAt = Timestamp.now(),
                 updatedAt = Timestamp.now()
             )
