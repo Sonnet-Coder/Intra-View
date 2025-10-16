@@ -35,6 +35,7 @@ fun HomeScreen(
     onEventClick: (String) -> Unit,
     onCreateEventClick: () -> Unit,
     onLogout: () -> Unit,
+    onProfileClick: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val myEvents by viewModel.myEvents.collectAsState()
@@ -55,6 +56,9 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.my_events)) },
                 actions = {
+                    IconButton(onClick = onProfileClick) {
+                        Icon(Icons.Default.Person, contentDescription = "Profile")
+                    }
                     IconButton(onClick = {
                         scope.launch {
                             viewModel.signOut(context)

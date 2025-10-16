@@ -23,6 +23,12 @@ sealed class Routes(val route: String) {
         fun createRoute(eventId: String) = "playlist/$eventId"
     }
     object Profile : Routes("profile")
+    object GuestList : Routes("guest_list/{eventId}") {
+        fun createRoute(eventId: String) = "guest_list/$eventId"
+    }
+    object GuestDetail : Routes("guest_detail/{userId}") {
+        fun createRoute(userId: String) = "guest_detail/$userId"
+    }
 }
 
 

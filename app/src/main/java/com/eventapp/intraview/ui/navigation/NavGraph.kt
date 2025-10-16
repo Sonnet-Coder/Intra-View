@@ -78,6 +78,9 @@ fun NavGraph(
                     navController.navigate(Routes.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
+                },
+                onProfileClick = {
+                    navController.navigate(Routes.Profile.route)
                 }
             )
         }
@@ -106,7 +109,8 @@ fun NavGraph(
                 onNavigateToPhotos = { navController.navigate(Routes.PhotoGallery.createRoute(eventId)) },
                 onNavigateToQR = { navController.navigate(Routes.QRDisplay.createRoute(eventId)) },
                 onNavigateToScanner = { navController.navigate(Routes.QRScanner.createRoute(eventId)) },
-                onNavigateToPlaylist = { navController.navigate(Routes.Playlist.createRoute(eventId)) }
+                onNavigateToPlaylist = { navController.navigate(Routes.Playlist.createRoute(eventId)) },
+                onNavigateToGuestList = { navController.navigate(Routes.GuestList.createRoute(eventId)) }
             )
         }
         
@@ -168,6 +172,37 @@ fun NavGraph(
             val eventId = backStackEntry.arguments?.getString("eventId") ?: return@composable
             PlaylistScreen(
                 eventId = eventId,
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        
+        composable(Routes.Profile.route) {
+            com.eventapp.intraview.ui.screens.profile.ProfileScreen(
+                onNavigateBack = { navController.navigateUp() }
+            )
+        }
+        
+        composable(
+            route = Routes.GuestList.route,
+            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId") ?: return@composable
+            com.eventapp.intraview.ui.screens.guest.GuestListScreen(
+                eventId = eventId,
+                onNavigateBack = { navController.navigateUp() },
+                onGuestClick = { userId ->
+                    navController.navigate(Routes.GuestDetail.createRoute(userId))
+                }
+            )
+        }
+        
+        composable(
+            route = Routes.GuestDetail.route,
+            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: return@composable
+            com.eventapp.intraview.ui.screens.guest.GuestDetailScreen(
+                userId = userId,
                 onNavigateBack = { navController.navigateUp() }
             )
         }

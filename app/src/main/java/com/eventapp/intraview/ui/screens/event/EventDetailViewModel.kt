@@ -91,7 +91,7 @@ class EventDetailViewModel @Inject constructor(
                     _invitations.value = invitations
                     Log.d(TAG, "Invitations updated: ${invitations.size} invitation(s) found")
                     invitations.forEachIndexed { index, invitation ->
-                        Log.d(TAG, "  Invitation $index: userId=${invitation.userId}, checkedIn=${invitation.checkedIn}")
+                        Log.d(TAG, "  Invitation $index: userId=${invitation.userId}, userName=${invitation.userName}, userEmail=${invitation.userEmail}, userPhotoUrl=${invitation.userPhotoUrl}, checkedIn=${invitation.checkedIn}")
                     }
                 }
         }

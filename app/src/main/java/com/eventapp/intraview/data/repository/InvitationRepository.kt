@@ -26,12 +26,25 @@ class InvitationRepository @Inject constructor(
     
     suspend fun createInvitation(eventId: String, userId: String): Result<Invitation> {
         return try {
+            // Fetch user information
+            val userDoc = firestore.collection(Constants.COLLECTION_USERS)
+                .document(userId)
+                .get()
+                .await()
+            
+            val userName = userDoc.getString("displayName") ?: ""
+            val userEmail = userDoc.getString("email") ?: ""
+            val userPhotoUrl = userDoc.getString("photoUrl") ?: ""
+            
             val invitationRef = firestore.collection(Constants.COLLECTION_INVITATIONS).document()
             
             val invitation = Invitation(
                 invitationId = invitationRef.id,
                 eventId = eventId,
                 userId = userId,
+                userName = userName,
+                userEmail = userEmail,
+                userPhotoUrl = userPhotoUrl,
                 status = InvitationStatus.PENDING,
                 qrToken = InviteCodeGenerator.generateQRToken(),
                 checkedIn = false,

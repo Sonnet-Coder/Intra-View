@@ -52,6 +52,7 @@ fun EventDetailScreen(
     onNavigateToQR: () -> Unit,
     onNavigateToScanner: () -> Unit,
     onNavigateToPlaylist: () -> Unit,
+    onNavigateToGuestList: () -> Unit,
     viewModel: EventDetailViewModel = hiltViewModel()
 ) {
     val event by viewModel.event.collectAsState()
@@ -299,7 +300,7 @@ fun EventDetailScreen(
                             TextButton(
                                 onClick = { 
                                     Log.d("EventDetailScreen", "View All clicked. Invitations: ${invitations.size}, GuestIds: ${event!!.guestIds.size}")
-                                    // TODO: Navigate to guests list screen when implemented
+                                    onNavigateToGuestList()
                                 },
                                 shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall)
                             ) {
@@ -327,6 +328,12 @@ fun EventDetailScreen(
                                                 .clip(CircleShape)
                                                 .background(MaterialTheme.colorScheme.primaryContainer)
                                         ) {
+                                            AsyncImage(
+                                                model = invitation.userPhotoUrl,
+                                                contentDescription = invitation.userName,
+                                                modifier = Modifier.fillMaxSize(),
+                                                contentScale = ContentScale.Crop
+                                            )
                                             if (invitation.checkedIn) {
                                                 Icon(
                                                     Icons.Default.CheckCircle,
