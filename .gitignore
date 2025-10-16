@@ -3,7 +3,7 @@
 *.ap_
 *.aab
 # Untracted md files
-md-files/
+md_files/
 # Files for the ART/Dalvik VM
 *.dex
 

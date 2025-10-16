@@ -16,7 +16,6 @@ import com.eventapp.intraview.ui.screens.auth.LoginScreen
 import com.eventapp.intraview.ui.screens.event.CreateEventScreen
 import com.eventapp.intraview.ui.screens.event.EventDetailScreen
 import com.eventapp.intraview.ui.screens.home.HomeScreen
-import com.eventapp.intraview.ui.screens.invitation.InvitationPreviewScreen
 import com.eventapp.intraview.ui.screens.photo.PhotoGalleryScreen
 import com.eventapp.intraview.ui.screens.playlist.PlaylistScreen
 import com.eventapp.intraview.ui.screens.qr.QRDisplayScreen
@@ -111,24 +110,6 @@ fun NavGraph(
                 onNavigateToScanner = { navController.navigate(Routes.QRScanner.createRoute(eventId)) },
                 onNavigateToPlaylist = { navController.navigate(Routes.Playlist.createRoute(eventId)) },
                 onNavigateToGuestList = { navController.navigate(Routes.GuestList.createRoute(eventId)) }
-            )
-        }
-        
-        composable(
-            route = Routes.InvitationPreview.route,
-            arguments = listOf(navArgument("eventId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val eventId = backStackEntry.arguments?.getString("eventId") ?: return@composable
-            InvitationPreviewScreen(
-                eventId = eventId,
-                onAccept = {
-                    navController.navigate(Routes.EventDetail.createRoute(eventId)) {
-                        popUpTo(Routes.Home.route)
-                    }
-                },
-                onDecline = {
-                    navController.navigateUp()
-                }
             )
         }
         

@@ -55,6 +55,10 @@
     <string name="search_location">Search location...</string>
     <string name="event_full">Event is full! Maximum capacity reached.</string>
     <string name="event_full_with_count">Event is full! Maximum capacity of %d guests reached.</string>
+    <string name="logout_confirmation_title">Sign Out</string>
+    <string name="logout_confirmation_message">Are you sure you want to sign out?</string>
+    <string name="logout_confirm">Sign Out</string>
+    <string name="logout_cancel">Cancel</string>
 </resources>
 
 

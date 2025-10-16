@@ -45,6 +45,7 @@ fun HomeScreen(
     val inviteCode by viewModel.inviteCode.collectAsState()
     val isJoiningEvent by viewModel.isJoiningEvent.collectAsState()
     val error by viewModel.error.collectAsState()
+    val showLogoutDialog by viewModel.showLogoutDialog.collectAsState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     
@@ -59,12 +60,7 @@ fun HomeScreen(
                     IconButton(onClick = onProfileClick) {
                         Icon(Icons.Default.Person, contentDescription = "Profile")
                     }
-                    IconButton(onClick = {
-                        scope.launch {
-                            viewModel.signOut(context)
-                            onLogout()
-                        }
-                    }) {
+                    IconButton(onClick = { viewModel.showLogoutDialog() }) {
                         Icon(Icons.Default.ExitToApp, contentDescription = stringResource(R.string.sign_out))
                     }
                 }
@@ -253,6 +249,57 @@ fun HomeScreen(
                     enabled = !isJoiningEvent
                 ) {
                     Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+    
+    // Logout Confirmation Dialog
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.hideLogoutDialog() },
+            shape = RoundedCornerShape(AppDimensions.cornerRadiusLarge),
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.ExitToApp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.logout_confirmation_title),
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.logout_confirmation_message),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            viewModel.signOut(context)
+                            viewModel.hideLogoutDialog()
+                            onLogout()
+                        }
+                    },
+                    shape = RoundedCornerShape(AppDimensions.cornerRadiusMedium),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(R.string.logout_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { viewModel.hideLogoutDialog() }
+                ) {
+                    Text(stringResource(R.string.logout_cancel))
                 }
             }
         )

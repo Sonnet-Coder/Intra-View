@@ -47,6 +47,9 @@ class HomeViewModel @Inject constructor(
     private val _isJoiningEvent = MutableStateFlow(false)
     val isJoiningEvent: StateFlow<Boolean> = _isJoiningEvent.asStateFlow()
     
+    private val _showLogoutDialog = MutableStateFlow(false)
+    val showLogoutDialog: StateFlow<Boolean> = _showLogoutDialog.asStateFlow()
+    
     init {
         loadEvents()
     }
@@ -89,6 +92,14 @@ class HomeViewModel @Inject constructor(
     fun hideInviteDialog() {
         _showInviteDialog.value = false
         _inviteCode.value = ""
+    }
+    
+    fun showLogoutDialog() {
+        _showLogoutDialog.value = true
+    }
+    
+    fun hideLogoutDialog() {
+        _showLogoutDialog.value = false
     }
     
     suspend fun joinEventWithCode(): Event? {
