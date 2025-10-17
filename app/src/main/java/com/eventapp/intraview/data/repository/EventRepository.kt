@@ -192,6 +192,59 @@ class EventRepository @Inject constructor(
         }
     }
     
+    suspend fun addPendingGuest(eventId: String, guestId: String): Result<Unit> {
+        return try {
+            firestore.collection(Constants.COLLECTION_EVENTS)
+                .document(eventId)
+                .update("pendingGuestIds", FieldValue.arrayUnion(guestId))
+                .await()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.message ?: "Failed to add pending guest")
+        }
+    }
+    
+    suspend fun removePendingGuest(eventId: String, guestId: String): Result<Unit> {
+        return try {
+            firestore.collection(Constants.COLLECTION_EVENTS)
+                .document(eventId)
+                .update("pendingGuestIds", FieldValue.arrayRemove(guestId))
+                .await()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.message ?: "Failed to remove pending guest")
+        }
+    }
+    
+    suspend fun approveGuest(eventId: String, guestId: String): Result<Unit> {
+        return try {
+            // Use a batch write to ensure atomicity
+            val batch = firestore.batch()
+            val eventRef = firestore.collection(Constants.COLLECTION_EVENTS).document(eventId)
+            
+            // Remove from pending and add to approved guests
+            batch.update(eventRef, "pendingGuestIds", FieldValue.arrayRemove(guestId))
+            batch.update(eventRef, "guestIds", FieldValue.arrayUnion(guestId))
+            
+            batch.commit().await()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.message ?: "Failed to approve guest")
+        }
+    }
+    
+    suspend fun rejectGuest(eventId: String, guestId: String): Result<Unit> {
+        return try {
+            firestore.collection(Constants.COLLECTION_EVENTS)
+                .document(eventId)
+                .update("pendingGuestIds", FieldValue.arrayRemove(guestId))
+                .await()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.message ?: "Failed to reject guest")
+        }
+    }
+    
     suspend fun addPlaylistUrl(eventId: String, playlistUrl: String): Result<Unit> {
         return try {
             firestore.collection(Constants.COLLECTION_EVENTS)

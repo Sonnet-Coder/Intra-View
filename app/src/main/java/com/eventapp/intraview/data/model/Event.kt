@@ -18,6 +18,7 @@ data class Event(
     val backgroundImageUrl: String = "",
     val inviteCode: String = "",
     val guestIds: List<String> = emptyList(),
+    val pendingGuestIds: List<String> = emptyList(), // Users awaiting host approval
     val photoCount: Int = 0,
     val playlistUrls: List<String> = emptyList(),
     val musicPlaylistUrl: String? = null, // Optional external music playlist link

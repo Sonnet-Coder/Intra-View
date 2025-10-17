@@ -7,6 +7,7 @@ import com.eventapp.intraview.data.model.Event
 import com.eventapp.intraview.data.repository.AuthRepository
 import com.eventapp.intraview.data.repository.EventRepository
 import com.eventapp.intraview.data.repository.InvitationRepository
+import com.eventapp.intraview.data.repository.PendingGuestRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val eventRepository: EventRepository,
     private val authRepository: AuthRepository,
-    private val invitationRepository: InvitationRepository
+    private val invitationRepository: InvitationRepository,
+    private val pendingGuestRepository: PendingGuestRepository
 ) : ViewModel() {
     
     companion object {
@@ -143,7 +145,7 @@ class HomeViewModel @Inject constructor(
             return null
         }
         
-        // Check if user already has an invitation
+        // Check if user already has an invitation (already approved)
         val existingInvitation = invitationRepository.getInvitationForUserAndEvent(userId, event.eventId)
         
         if (existingInvitation != null) {
@@ -153,7 +155,17 @@ class HomeViewModel @Inject constructor(
             return event
         }
         
-        // Check guest limit before allowing new guest to join
+        // Check if user already has a pending request
+        val existingPendingGuest = pendingGuestRepository.getPendingGuest(event.eventId, userId)
+        
+        if (existingPendingGuest != null) {
+            Log.d(TAG, "User already has a pending request for this event")
+            _error.value = "Your request to join is pending host approval"
+            _isJoiningEvent.value = false
+            return null
+        }
+        
+        // Check guest limit before allowing new guest to request
         val currentGuestCount = event.guestIds.size
         val maxGuests = event.maxGuests
         
@@ -166,36 +178,37 @@ class HomeViewModel @Inject constructor(
         
         Log.d(TAG, "Guest limit check passed: $currentGuestCount/${maxGuests ?: "No Limit"} guests")
         
-        // Add user to event's guest list
-        Log.d(TAG, "Adding user to event's guest list")
-        val addGuestResult = eventRepository.addGuestToEvent(event.eventId, userId)
+        // Add user to pending guest list instead of directly adding to event
+        Log.d(TAG, "Adding user to pending guest list for approval")
+        val addPendingResult = eventRepository.addPendingGuest(event.eventId, userId)
         
-        if (addGuestResult is com.eventapp.intraview.util.Result.Error) {
-            Log.e(TAG, "Failed to add user to event: ${addGuestResult.message}")
-            _error.value = addGuestResult.message
+        if (addPendingResult is com.eventapp.intraview.util.Result.Error) {
+            Log.e(TAG, "Failed to add user to pending list: ${addPendingResult.message}")
+            _error.value = addPendingResult.message
             _isJoiningEvent.value = false
             return null
         }
         
-        // Create invitation for the user
-        Log.d(TAG, "Creating invitation for user")
-        val invitationResult = invitationRepository.createInvitation(event.eventId, userId)
+        // Create pending guest record with user info
+        Log.d(TAG, "Creating pending guest record")
+        val pendingGuestResult = pendingGuestRepository.createPendingGuest(event.eventId, userId)
         
-        if (invitationResult is com.eventapp.intraview.util.Result.Error) {
-            Log.e(TAG, "Failed to create invitation: ${invitationResult.message}")
-            _error.value = "Failed to create invitation: ${invitationResult.message}"
+        if (pendingGuestResult is com.eventapp.intraview.util.Result.Error) {
+            Log.e(TAG, "Failed to create pending guest: ${pendingGuestResult.message}")
+            _error.value = "Failed to create join request: ${pendingGuestResult.message}"
             _isJoiningEvent.value = false
             return null
         }
         
-        if (invitationResult is com.eventapp.intraview.util.Result.Success) {
-            Log.d(TAG, "Successfully created invitation with QR token: ${invitationResult.data.qrToken}")
+        if (pendingGuestResult is com.eventapp.intraview.util.Result.Success) {
+            Log.d(TAG, "Successfully created pending guest request")
         }
         
         _isJoiningEvent.value = false
-        Log.d(TAG, "Successfully joined event")
+        _error.value = "Join request sent! Waiting for host approval"
+        Log.d(TAG, "Successfully sent join request for approval")
         
-        return event
+        return null // Don't navigate to event yet, user must wait for approval
     }
     
     suspend fun signOut(context: android.content.Context) {

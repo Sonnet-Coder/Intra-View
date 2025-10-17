@@ -57,6 +57,7 @@ fun EventDetailScreen(
 ) {
     val event by viewModel.event.collectAsState()
     val invitations by viewModel.invitations.collectAsState()
+    val pendingGuests by viewModel.pendingGuests.collectAsState()
     val recentPhotos by viewModel.recentPhotos.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -273,6 +274,55 @@ fun EventDetailScreen(
                         }
                         
                         Spacer(modifier = Modifier.height(AppSpacing.huge))
+                        
+                        // Pending Approvals Section (Only for host)
+                        if (isHost && pendingGuests.isNotEmpty()) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                ),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(AppSpacing.normal)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.PersonAdd,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(AppDimensions.iconSizeMedium),
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                        Text(
+                                            text = "Pending Approvals (${pendingGuests.size})",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(AppSpacing.medium))
+                                    
+                                    pendingGuests.forEach { pendingGuest ->
+                                        PendingGuestItem(
+                                            pendingGuest = pendingGuest,
+                                            onApprove = { viewModel.approveGuest(pendingGuest) },
+                                            onReject = { viewModel.rejectGuest(pendingGuest) }
+                                        )
+                                        
+                                        if (pendingGuest != pendingGuests.last()) {
+                                            Spacer(modifier = Modifier.height(AppSpacing.medium))
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(AppSpacing.extraLarge))
+                        }
                         
                         // Guests Section with modern header
                         Row(
@@ -535,5 +585,109 @@ fun EventDetailScreen(
         }
     }
 }
+
+@Composable
+private fun PendingGuestItem(
+    pendingGuest: com.eventapp.intraview.data.model.PendingGuest,
+    onApprove: () -> Unit,
+    onReject: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppSpacing.medium),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.medium),
+                modifier = Modifier.weight(1f)
+            ) {
+                // User avatar
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    if (pendingGuest.userPhotoUrl.isNotEmpty()) {
+                        AsyncImage(
+                            model = pendingGuest.userPhotoUrl,
+                            contentDescription = pendingGuest.userName,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+                
+                // User info
+                Column {
+                    Text(
+                        text = pendingGuest.userName.ifEmpty { "Unknown User" },
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = pendingGuest.userEmail,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            // Action buttons
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.small)
+            ) {
+                IconButton(
+                    onClick = onReject,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Reject",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                
+                IconButton(
+                    onClick = onApprove,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Approve",
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+
 
 

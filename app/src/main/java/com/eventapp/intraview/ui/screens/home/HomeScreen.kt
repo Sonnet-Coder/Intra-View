@@ -189,14 +189,23 @@ fun HomeScreen(
                         enter = fadeIn() + expandVertically(),
                         exit = fadeOut() + shrinkVertically()
                     ) {
+                        val isSuccess = error?.contains("sent", ignoreCase = true) == true || 
+                                       error?.contains("approval", ignoreCase = true) == true
                         Surface(
-                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(AppDimensions.cornerRadiusSmall),
-                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                            color = if (isSuccess) {
+                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                            } else {
+                                MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                            }
                         ) {
                             Text(
                                 text = error ?: "",
-                                color = MaterialTheme.colorScheme.error,
+                                color = if (isSuccess) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.error
+                                },
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.padding(AppSpacing.small)
                             )
