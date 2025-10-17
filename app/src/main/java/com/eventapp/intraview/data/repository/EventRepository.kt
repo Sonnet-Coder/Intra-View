@@ -29,8 +29,14 @@ class EventRepository @Inject constructor(
         description: String,
         date: Timestamp,
         location: String,
+        latitude: Double?,
+        longitude: Double?,
         durationMinutes: Int,
-        backgroundImageUrl: String
+        backgroundImageUrl: String,
+        musicPlaylistUrl: String?,
+        sharedAlbumUrl: String?,
+        maxGuests: Int?,
+        isPublic: Boolean
     ): Result<Event> {
         return try {
             val inviteCode = InviteCodeGenerator.generate()
@@ -43,12 +49,18 @@ class EventRepository @Inject constructor(
                 description = description,
                 date = date,
                 location = location,
+                latitude = latitude,
+                longitude = longitude,
                 durationMinutes = durationMinutes,
                 backgroundImageUrl = backgroundImageUrl,
                 inviteCode = inviteCode,
                 guestIds = emptyList(),
                 photoCount = 0,
                 playlistUrls = emptyList(),
+                musicPlaylistUrl = musicPlaylistUrl,
+                sharedAlbumUrl = sharedAlbumUrl,
+                maxGuests = maxGuests,
+                isPublic = isPublic,
                 createdAt = Timestamp.now(),
                 updatedAt = Timestamp.now()
             )
@@ -177,6 +189,59 @@ class EventRepository @Inject constructor(
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e.message ?: "Failed to remove guest")
+        }
+    }
+    
+    suspend fun addPendingGuest(eventId: String, guestId: String): Result<Unit> {
+        return try {
+            firestore.collection(Constants.COLLECTION_EVENTS)
+                .document(eventId)
+                .update("pendingGuestIds", FieldValue.arrayUnion(guestId))
+                .await()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.message ?: "Failed to add pending guest")
+        }
+    }
+    
+    suspend fun removePendingGuest(eventId: String, guestId: String): Result<Unit> {
+        return try {
+            firestore.collection(Constants.COLLECTION_EVENTS)
+                .document(eventId)
+                .update("pendingGuestIds", FieldValue.arrayRemove(guestId))
+                .await()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.message ?: "Failed to remove pending guest")
+        }
+    }
+    
+    suspend fun approveGuest(eventId: String, guestId: String): Result<Unit> {
+        return try {
+            // Use a batch write to ensure atomicity
+            val batch = firestore.batch()
+            val eventRef = firestore.collection(Constants.COLLECTION_EVENTS).document(eventId)
+            
+            // Remove from pending and add to approved guests
+            batch.update(eventRef, "pendingGuestIds", FieldValue.arrayRemove(guestId))
+            batch.update(eventRef, "guestIds", FieldValue.arrayUnion(guestId))
+            
+            batch.commit().await()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.message ?: "Failed to approve guest")
+        }
+    }
+    
+    suspend fun rejectGuest(eventId: String, guestId: String): Result<Unit> {
+        return try {
+            firestore.collection(Constants.COLLECTION_EVENTS)
+                .document(eventId)
+                .update("pendingGuestIds", FieldValue.arrayRemove(guestId))
+                .await()
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Result.Error(e.message ?: "Failed to reject guest")
         }
     }
     

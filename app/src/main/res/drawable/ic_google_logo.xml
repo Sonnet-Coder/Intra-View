@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Blue G segment -->
+    <path
+        android:fillColor="#4285F4"
+        android:pathData="M23.49,12.27c0,-0.82 -0.07,-1.41 -0.22,-2.03H12v3.69h6.5c-0.13,0.92 -0.84,2.31 -2.4,3.24l0,0 3.48,2.7c2.02,-1.86 3.21,-4.6 3.21,-7.6z"/>
+    <!-- Green segment -->
+    <path
+        android:fillColor="#34A853"
+        android:pathData="M12,24c2.91,0 5.35,-0.96 7.13,-2.62l-3.48,-2.7c-0.93,0.6 -2.18,1.02 -3.65,1.02 -2.79,0 -5.16,-1.88 -6.01,-4.46l-3.59,2.78C3.26,21.3 7.33,24 12,24z"/>
+    <!-- Yellow segment -->
+    <path
+        android:fillColor="#FBBC05"
+        android:pathData="M5.99,15.24c-0.21,-0.62 -0.33,-1.29 -0.33,-1.99 0,-0.69 0.12,-1.37 0.33,-1.99l-3.6,-2.78C1.47,9.03 1,10.47 1,12c0,1.53 0.47,2.97 1.39,4.52l3.6,-2.78z"/>
+    <!-- Red segment -->
+    <path
+        android:fillColor="#EA4335"
+        android:pathData="M12,4.73c1.59,0 3.02,0.55 4.15,1.62l3.11,-3.11C17.33,1.21 14.91,0 12,0 7.33,0 3.26,2.7 1.39,7.48l3.6,2.78C6.84,7.68 9.21,4.73 12,4.73z"/>
+</vector>
+
+

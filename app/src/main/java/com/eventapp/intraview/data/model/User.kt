@@ -9,6 +9,12 @@ data class User(
     val email: String = "",
     val displayName: String = "",
     val photoUrl: String = "",
+    val bio: String = "",
+    val instagramHandle: String = "",
+    val twitterHandle: String = "",
+    val pinterestHandle: String = "",
+    val tiktokHandle: String = "",
+    val youtubeHandle: String = "",
     val createdAt: Timestamp = Timestamp.now()
 )
 

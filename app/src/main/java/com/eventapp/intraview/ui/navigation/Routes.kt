@@ -7,9 +7,6 @@ sealed class Routes(val route: String) {
     object EventDetail : Routes("event_detail/{eventId}") {
         fun createRoute(eventId: String) = "event_detail/$eventId"
     }
-    object InvitationPreview : Routes("invitation_preview/{eventId}") {
-        fun createRoute(eventId: String) = "invitation_preview/$eventId"
-    }
     object PhotoGallery : Routes("photo_gallery/{eventId}") {
         fun createRoute(eventId: String) = "photo_gallery/$eventId"
     }
@@ -23,6 +20,12 @@ sealed class Routes(val route: String) {
         fun createRoute(eventId: String) = "playlist/$eventId"
     }
     object Profile : Routes("profile")
+    object GuestList : Routes("guest_list/{eventId}") {
+        fun createRoute(eventId: String) = "guest_list/$eventId"
+    }
+    object GuestDetail : Routes("guest_detail/{userId}") {
+        fun createRoute(userId: String) = "guest_detail/$userId"
+    }
 }
 
 

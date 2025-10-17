@@ -31,11 +31,29 @@ class CreateEventViewModel @Inject constructor(
     private val _location = MutableStateFlow("")
     val location: StateFlow<String> = _location.asStateFlow()
     
+    private val _latitude = MutableStateFlow<Double?>(null)
+    val latitude: StateFlow<Double?> = _latitude.asStateFlow()
+    
+    private val _longitude = MutableStateFlow<Double?>(null)
+    val longitude: StateFlow<Double?> = _longitude.asStateFlow()
+    
     private val _durationMinutes = MutableStateFlow(120) // Default 2 hours
     val durationMinutes: StateFlow<Int> = _durationMinutes.asStateFlow()
     
     private val _selectedBackgroundIndex = MutableStateFlow(0)
     val selectedBackgroundIndex: StateFlow<Int> = _selectedBackgroundIndex.asStateFlow()
+    
+    private val _musicPlaylistUrl = MutableStateFlow("")
+    val musicPlaylistUrl: StateFlow<String> = _musicPlaylistUrl.asStateFlow()
+    
+    private val _sharedAlbumUrl = MutableStateFlow("")
+    val sharedAlbumUrl: StateFlow<String> = _sharedAlbumUrl.asStateFlow()
+    
+    private val _maxGuests = MutableStateFlow<Int?>(null) // null means no limit
+    val maxGuests: StateFlow<Int?> = _maxGuests.asStateFlow()
+    
+    private val _isPublic = MutableStateFlow(false)
+    val isPublic: StateFlow<Boolean> = _isPublic.asStateFlow()
     
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -64,12 +82,33 @@ class CreateEventViewModel @Inject constructor(
         _location.value = value
     }
     
+    fun setLocationCoordinates(latitude: Double?, longitude: Double?) {
+        _latitude.value = latitude
+        _longitude.value = longitude
+    }
+    
     fun setDurationMinutes(value: Int) {
         _durationMinutes.value = value
     }
     
     fun setSelectedBackgroundIndex(index: Int) {
         _selectedBackgroundIndex.value = index
+    }
+    
+    fun setMusicPlaylistUrl(value: String) {
+        _musicPlaylistUrl.value = value
+    }
+    
+    fun setSharedAlbumUrl(value: String) {
+        _sharedAlbumUrl.value = value
+    }
+    
+    fun setMaxGuests(value: Int?) {
+        _maxGuests.value = value
+    }
+    
+    fun setIsPublic(value: Boolean) {
+        _isPublic.value = value
     }
     
     fun createEvent() {
@@ -84,8 +123,14 @@ class CreateEventViewModel @Inject constructor(
                 description = _description.value,
                 date = Timestamp(_date.value),
                 location = _location.value,
+                latitude = _latitude.value,
+                longitude = _longitude.value,
                 durationMinutes = _durationMinutes.value,
-                backgroundImageUrl = backgroundImages[_selectedBackgroundIndex.value]
+                backgroundImageUrl = backgroundImages[_selectedBackgroundIndex.value],
+                musicPlaylistUrl = _musicPlaylistUrl.value.takeIf { it.isNotBlank() },
+                sharedAlbumUrl = _sharedAlbumUrl.value.takeIf { it.isNotBlank() },
+                maxGuests = _maxGuests.value,
+                isPublic = _isPublic.value
             )
             
             _isLoading.value = false

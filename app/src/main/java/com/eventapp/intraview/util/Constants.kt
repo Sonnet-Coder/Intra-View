@@ -6,6 +6,7 @@ object Constants {
     const val COLLECTION_EVENTS = "events"
     const val COLLECTION_INVITATIONS = "invitations"
     const val COLLECTION_PHOTOS = "photos"
+    const val COLLECTION_PENDING_GUESTS = "pending_guests"
     
     // Storage Paths
     const val STORAGE_EVENTS = "events"

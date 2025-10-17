@@ -2,21 +2,12 @@
 *.apk
 *.ap_
 *.aab
-# Untracted md files
-GOOGLE_SIGNOUT_FIX.md
-CHANGES_SUMMARY.md
-JOIN_EVENT_FIX.md
-FIRESTORE_INDEXES_EXPLAINED.md
-FIRESTORE_SETUP_GUIDE.md
-INDEXES_SUMMARY.md
-INDEXES_REFERENCE.md
-BUG_FIXES_SUMMARY.md
+
 # Files for the ART/Dalvik VM
 *.dex
-
+md/
 # Java class files
 *.class
-
 # Generated files
 bin/
 gen/
@@ -30,6 +21,9 @@ build/
 gradle-app.setting
 !gradle-wrapper.jar
 .gradletasknamecache
+
+# Kotlin
+.kotlin/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -47,7 +41,6 @@ proguard/
 captures/
 .externalNativeBuild/
 .cxx/
-*.apk
 output.json
 
 # IntelliJ IDEA
@@ -81,7 +74,6 @@ keystore.properties
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
-.cxx/
 
 # NDK
 obj/
@@ -186,16 +178,11 @@ dokka/
 *.tmp
 *.temp
 .cache/
-node_modules/
-.npmrc
 
 # Tests
 test-results/
 *.test
 coverage/
 .coverage
-
-# Changes summary (optional - remove this line if you want to track it)
-CHANGES_SUMMARY.md
 
 
