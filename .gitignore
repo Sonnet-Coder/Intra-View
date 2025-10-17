@@ -2,14 +2,13 @@
 *.apk
 *.ap_
 *.aab
-# Untracted md files
-md_files/
+
 # Files for the ART/Dalvik VM
 *.dex
 
+md_files/
 # Java class files
 *.class
-
 # Generated files
 bin/
 gen/
@@ -40,7 +39,6 @@ proguard/
 captures/
 .externalNativeBuild/
 .cxx/
-*.apk
 output.json
 
 # IntelliJ IDEA
@@ -74,7 +72,6 @@ keystore.properties
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
-.cxx/
 
 # NDK
 obj/
@@ -179,16 +176,11 @@ dokka/
 *.tmp
 *.temp
 .cache/
-node_modules/
-.npmrc
 
 # Tests
 test-results/
 *.test
 coverage/
 .coverage
-
-# Changes summary (optional - remove this line if you want to track it)
-CHANGES_SUMMARY.md
 
 

@@ -57,6 +57,8 @@ android {
     }
     lint {
         disable += "UnsafeOptInUsageError"
+        disable += "AutoboxingStateCreation"
+        disable += "MutableCollectionMutableState"
     }
 }
 

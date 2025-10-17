@@ -1,8 +1,21 @@
-# Intra-View Architecture Documentation
+# Lumen Architecture Documentation
 
 ## Overview
 
-This document provides a detailed explanation of the architectural decisions, patterns, and design philosophy behind the Intra-View event management app.
+This document provides a comprehensive explanation of the architectural decisions, patterns, and design philosophy behind the Lumen event management app. The app demonstrates clean architecture principles, MVVM pattern, and modern Android development practices using Jetpack Compose and Firebase.
+
+## Table of Contents
+
+1. [Architecture Pattern](#architecture-pattern-clean-architecture-simplified)
+2. [Layer Breakdown](#layer-breakdown)
+3. [Key Design Patterns](#key-design-patterns)
+4. [Data Flow Patterns](#data-flow-patterns)
+5. [State Management](#state-management)
+6. [Firebase Integration](#firebase-integration)
+7. [Feature Modules](#feature-modules)
+8. [Navigation Architecture](#navigation-architecture)
+9. [Dependency Injection](#dependency-injection)
+10. [Error Handling](#error-handling)
 
 ## Architecture Pattern: Clean Architecture (Simplified)
 
@@ -476,4 +489,232 @@ This architecture prioritizes:
 
 It's designed for a showcase project that demonstrates real-world Android development with modern tools and patterns, while being practical for actual deployment at small to medium scale.
 
+
+
+## Feature-Specific Architecture
+
+### Guest Management System
+
+The guest management feature implements an approval workflow:
+
+**Data Models:**
+
+- `Invitation`: Represents invitation status (pending, accepted, declined)
+- `PendingGuest`: Tracks users waiting for host approval
+- `Event.pendingGuestIds`: Array of user IDs awaiting approval
+
+**Flow:**
+
+```text
+User enters invite code
+  ↓
+Check event settings (requiresApproval?)
+  ↓
+If approval required:
+  - Create PendingGuest entry
+  - Add to event.pendingGuestIds
+  - Notify host
+  ↓
+Host reviews in Guest List Screen
+  ↓
+Host approves/declines
+  ↓
+If approved:
+  - Create Invitation (status: accepted)
+  - Add to event.guestIds
+  - Remove from pendingGuestIds
+  - Generate QR token
+```
+
+**Repositories:**
+
+- `PendingGuestRepository`: Manages pending guest requests
+- `EventRepository`: Handles guest approval/decline operations
+- `InvitationRepository`: Creates invitations after approval
+
+### Profile Management
+
+**Architecture:**
+
+- `ProfileScreen`: Displays user info and event history
+- `ProfileViewModel`: Manages profile state and updates
+- `UserRepository`: Handles user CRUD operations
+- `AuthRepository`: Manages authentication state
+
+**Features:**
+
+- View personal information
+- See hosted events
+- See events attending as guest
+- Update profile information
+- Track event participation
+
+### Location Selection
+
+**Implementation:**
+
+- `MapLocationPicker`: Composable with Google Maps integration
+- Uses Google Maps Compose library
+- Real-time location updates
+- Search and pin location on map
+- Returns coordinates and address
+
+**Integration:**
+
+```kotlin
+// In CreateEventScreen
+MapLocationPicker(
+    onLocationSelected = { lat, lng, address ->
+        viewModel.setLocation(address)
+        viewModel.setCoordinates(lat, lng)
+    }
+)
+```
+
+### Event Settings & Visibility
+
+**Settings Dialog:**
+
+- Guest limit configuration
+- Approval workflow toggle
+- Visibility settings (public/private)
+- Collaborative sections toggle
+
+**Data Flow:**
+
+```kotlin
+data class Event(
+    val guestLimit: Int? = null,
+    val requiresApproval: Boolean = false,
+    val isPublic: Boolean = true,
+    val allowCollaborativeSections: Boolean = true
+)
+```
+
+**Validation:**
+
+- Guest limit checked before accepting invitations
+- Visibility affects event discovery (future feature)
+- Collaborative settings control guest permissions
+
+## Advanced Features
+
+### Real-Time Synchronization
+
+All features use Firestore snapshots for real-time updates:
+
+```kotlin
+fun observeEvent(eventId: String): Flow<Event?> = callbackFlow {
+    val listener = firestore.collection("events")
+        .document(eventId)
+        .addSnapshotListener { snapshot, error ->
+            trySend(snapshot?.toObject(Event::class.java))
+        }
+    awaitClose { listener.remove() }
+}
+```
+
+### Image Compression Pipeline
+
+```kotlin
+// 1. Select image
+val uri = imagePicker.result
+
+// 2. Read and rotate based on EXIF
+val bitmap = ImageCompressor.decodeBitmap(uri)
+val rotated = ImageCompressor.rotateIfNeeded(bitmap, uri)
+
+// 3. Compress
+val compressed = ImageCompressor.compressImage(
+    rotated,
+    maxWidth = 1920,
+    quality = 85
+)
+
+// 4. Upload to Firebase Storage
+val url = photoRepository.uploadPhoto(compressed, eventId)
+```
+
+### QR Code System
+
+**Generation:**
+
+```kotlin
+// Create unique token per invitation
+val qrToken = UUID.randomUUID().toString()
+
+// Generate QR bitmap
+val bitmap = QRCodeGenerator.generateQR(qrToken)
+
+// Store token in invitation
+invitation.qrToken = qrToken
+```
+
+**Validation:**
+
+```kotlin
+// Scan QR code
+val scannedToken = mlKit.scanQRCode(frame)
+
+// Validate and check-in
+val invitation = invitationRepository.findByToken(scannedToken)
+if (invitation != null && invitation.eventId == currentEventId) {
+    invitationRepository.checkIn(invitation.id)
+}
+```
+
+## Security Architecture
+
+### Client-Side Validation
+
+- Input sanitization in ViewModels
+- Date/time validation
+- Guest limit enforcement
+- Image size limits
+
+### Server-Side Validation
+
+- Firestore security rules (see `firestore.rules.production`)
+- User authentication checks
+- Ownership verification
+- Rate limiting via Firebase quotas
+
+### Data Privacy
+
+- User data only accessible to authenticated users
+- Event data only accessible to host and guests
+- Photos only visible to event members
+- QR tokens validated server-side
+
+## Maintenance & Updates
+
+### Adding New Features
+
+1. **Create data model** in `data/model/`
+2. **Create repository** in `data/repository/`
+3. **Add to DI** in `di/` modules
+4. **Create ViewModel** in appropriate `ui/screens/` folder
+5. **Create Screen** with Compose
+6. **Add route** in `ui/navigation/Routes.kt`
+7. **Update NavGraph** in `ui/navigation/NavGraph.kt`
+8. **Update security rules** in `firestore.rules.production`
+
+### Best Practices
+
+- Keep ViewModels focused on single feature
+- Use sealed classes for states
+- Prefer Flows over LiveData
+- Use Hilt for all dependencies
+- Follow Material 3 guidelines
+- Test on multiple screen sizes
+- Monitor Firebase usage
+
+---
+
+**Last Updated:** October 2025
+
+For more information:
+
+- [README.md](README.md) - Project overview
+- [SETUP_GUIDE.md](SETUP_GUIDE.md) - Setup instructions
 
